@@ -76,6 +76,7 @@ function M.get_options(config, ngx)
     disable_access_token_header = config.disable_access_token_header == "yes",
     groups_claim = config.groups_claim,
     skip_already_auth_requests = config.skip_already_auth_requests == "yes",
+    anonymous = config.anonymous,
     bearer_jwt_auth_enable = config.bearer_jwt_auth_enable == "yes",
     bearer_jwt_auth_allowed_auds = config.bearer_jwt_auth_allowed_auds,
     bearer_jwt_auth_signing_algs = config.bearer_jwt_auth_signing_algs,
@@ -151,6 +152,23 @@ function M.injectUser(user, headerName)
   ngx.log(ngx.DEBUG, "Injecting " .. headerName)
   local userinfo = cjson.encode(user)
   kong.service.request.set_header(headerName, ngx.encode_base64(userinfo))
+end
+
+function M.injectAnonymousUser(anonymousUserId)
+  local consumer_cache_key, consumer, err
+  local cache = kong.cache
+  consumer_cache_key = kong.db.consumers:cache_key(anonymousUserId)
+  consumer, err      = cache:get(consumer_cache_key, nil,
+                                 kong.client.load_consumer,
+                                 anonymousUserId)
+  if err then
+    kong.log.err(err)
+    return false
+  end
+
+  kong.service.request.set_header(constants.HEADERS.ANONYMOUS, true)
+  kong.service.request.set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
+  kong.service.request.set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
 end
 
 function M.injectGroups(user, claim)

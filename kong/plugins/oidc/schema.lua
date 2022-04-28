@@ -34,6 +34,7 @@ return {
     revoke_tokens_on_logout = { type = "string", required = false, default = "no" },
     groups_claim = { type = "string", required = false, default = "groups" },
     skip_already_auth_requests = { type = "string", required = false, default = "no" },
+    anonymous = { type = "string", required = false, default = "" },
     bearer_jwt_auth_enable = { type = "string", required = false, default = "no" },
     bearer_jwt_auth_allowed_auds = { type = "array", required = false },
     bearer_jwt_auth_signing_algs = { type = "array", required = true, default = { "RS256" } },

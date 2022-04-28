@@ -62,6 +62,15 @@ function handle(oidcConfig)
   end
 
   if response == nil then
+    if oidcConfig.anonymous ~= "" and oidcConfig.anonymous ~= nil then
+      local userAgent = kong.request.get_headers()["user-agent"]
+      ngx.log(ngx.DEBUG, "ua " .. userAgent )
+      local m, err = ngx.re.match(userAgent, "(google|chrome|chromium|safari|edge|trident)", "io")
+      if not m then
+        utils.injectAnonymousUser(oidcConfig.anonymous)
+        return
+      end
+    end
     response = make_oidc(oidcConfig)
     if response then
       if response.user or response.id_token then
@@ -86,6 +95,10 @@ function handle(oidcConfig)
           and response.id_token) then
         utils.injectIDToken(response.id_token, oidcConfig.id_token_header_name)
       end
+      return
+    end
+    if oidcConfig.anonymous ~= "" and oidcConfig.anonymous ~= nil then
+      utils.injectAnonymousUser(oidcConfig.anonymous)
     end
   end
 end
