@@ -64,7 +64,6 @@ function handle(oidcConfig)
   if response == nil then
     if oidcConfig.anonymous ~= "" and oidcConfig.anonymous ~= nil then
       local userAgent = kong.request.get_headers()["user-agent"]
-      ngx.log(ngx.DEBUG, "ua " .. userAgent )
       local m, err = ngx.re.match(userAgent, "(google|chrome|chromium|safari|edge|trident)", "io")
       if not m then
         utils.injectAnonymousUser(oidcConfig.anonymous)
